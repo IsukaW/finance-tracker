@@ -1,0 +1,20 @@
+<resources>
+    <string name="app_name">Personal Finance Tracker</string>
+    <string-array name="categories">
+        <item>Food</item>
+        <item>Transport</item>
+        <item>Bills</item>
+        <item>Entertainment</item>
+        <item>Shopping</item>
+        <item>Health</item>
+        <item>Education</item>
+        <item>Others</item>
+    </string-array>
+    <string-array name="currencies">
+        <item>$</item>
+        <item>€</item>
+        <item>£</item>
+        <item>¥</item>
+        <item>₹</item>
+    </string-array>
+</resources>
