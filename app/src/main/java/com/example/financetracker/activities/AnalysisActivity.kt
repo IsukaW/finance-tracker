@@ -1,5 +1,6 @@
 package com.example.financetracker.activities
 
+import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
 import android.view.View
@@ -36,6 +37,7 @@ class AnalysisActivity : AppCompatActivity() {
 
         setupMonthSpinner()
         loadTransactions()
+        setupBottomNavigation()
     }
 
     private fun setupMonthSpinner() {
@@ -112,5 +114,30 @@ class AnalysisActivity : AppCompatActivity() {
         val totalExpense = expensesByCategory.values.sum()
         binding.textTotalExpense.text = String.format("Total: %s%.2f",
             preferenceManager.getCurrencyType(), totalExpense)
+    }
+
+    private fun setupBottomNavigation() {
+        binding.bottomNavigationView.setOnItemSelectedListener { item ->
+            when (item.itemId) {
+                R.id.menu_home -> {
+                    startActivity(Intent(this, MainActivity::class.java))
+                    finish()
+                    true
+                }
+                R.id.menu_analysis -> {
+                    // Already in AnalysisActivity, no need to do anything
+                    true
+                }
+                R.id.menu_settings -> {
+                    startActivity(Intent(this, SettingsActivity::class.java))
+                    finish()
+                    true
+                }
+                else -> false
+            }
+        }
+        
+        // Set analysis as selected
+        binding.bottomNavigationView.selectedItemId = R.id.menu_analysis
     }
 }

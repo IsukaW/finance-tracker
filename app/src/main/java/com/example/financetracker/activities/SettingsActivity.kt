@@ -33,6 +33,7 @@ class SettingsActivity : AppCompatActivity() {
 
         setupCurrencySpinner()
         loadSettings()
+        setupBottomNavigation()
 
         binding.buttonSave.setOnClickListener { saveSettings() }
         binding.buttonBackup.setOnClickListener { backupData() }
@@ -174,5 +175,30 @@ class SettingsActivity : AppCompatActivity() {
         } else {
             Toast.makeText(this, "Failed to restore data", Toast.LENGTH_SHORT).show()
         }
+    }
+
+    private fun setupBottomNavigation() {
+        binding.bottomNavigationView.setOnItemSelectedListener { item ->
+            when (item.itemId) {
+                R.id.menu_home -> {
+                    startActivity(Intent(this, MainActivity::class.java))
+                    finish()
+                    true
+                }
+                R.id.menu_analysis -> {
+                    startActivity(Intent(this, AnalysisActivity::class.java))
+                    finish()
+                    true
+                }
+                R.id.menu_settings -> {
+                    // Already in SettingsActivity, no need to do anything
+                    true
+                }
+                else -> false
+            }
+        }
+        
+        // Set settings as selected
+        binding.bottomNavigationView.selectedItemId = R.id.menu_settings
     }
 }

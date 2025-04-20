@@ -1,8 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#4CAF50</color>
-    <color name="colorPrimaryDark">#388E3C</color>
-    <color name="colorAccent">#8BC34A</color>
+    <!-- Primary brand colors -->
+    <color name="colorPrimary">#2196F3</color>
+    <color name="colorPrimaryDark">#1976D2</color>
+    <color name="colorPrimaryLight">#BBDEFB</color>
+    <color name="colorAccent">#FF4081</color>
+
+    <!-- Transaction colors -->
     <color name="colorExpense">#F44336</color>
     <color name="colorIncome">#4CAF50</color>
+    
+    <!-- UI colors -->
+    <color name="colorBackground">#FFFFFF</color>
+    <color name="colorSurface">#FFFFFF</color>
+    <color name="colorError">#B00020</color>
+    
+    <!-- Text colors -->
+    <color name="textPrimary">#212121</color>
+    <color name="textSecondary">#757575</color>
+    <color name="textHint">#9E9E9E</color>
+    
+    <!-- Card and element colors -->
+    <color name="cardBackground">#FFFFFF</color>
+    <color name="dividerColor">#EEEEEE</color>
+    <color name="warningColor">#FFA000</color>
+    <color name="successColor">#00C853</color>
 </resources>

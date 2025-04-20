@@ -36,6 +36,7 @@ class MainActivity : AppCompatActivity() {
 
         setupRecyclerView()
         setupFAB()
+        setupBottomNavigation()
     }
 
     private fun setupRecyclerView() {
@@ -56,6 +57,29 @@ class MainActivity : AppCompatActivity() {
         binding.fabAddTransaction.setOnClickListener {
             startActivity(Intent(this, AddEditTransactionActivity::class.java))
         }
+    }
+
+    private fun setupBottomNavigation() {
+        binding.bottomNavigationView.setOnItemSelectedListener { item ->
+            when (item.itemId) {
+                R.id.menu_home -> {
+                    // Already in MainActivity, no need to do anything
+                    true
+                }
+                R.id.menu_analysis -> {
+                    startActivity(Intent(this, AnalysisActivity::class.java))
+                    true
+                }
+                R.id.menu_settings -> {
+                    startActivity(Intent(this, SettingsActivity::class.java))
+                    true
+                }
+                else -> false
+            }
+        }
+        
+        // Set home as selected by default
+        binding.bottomNavigationView.selectedItemId = R.id.menu_home
     }
 
     private fun loadTransactions() {
@@ -142,11 +166,16 @@ class MainActivity : AppCompatActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
-            R.id.action_analysis -> {
+            R.id.menu_home -> {
+                startActivity(Intent(this, MainActivity::class.java))
+                true
+            }
+
+            R.id.menu_analysis -> {
                 startActivity(Intent(this, AnalysisActivity::class.java))
                 true
             }
-            R.id.action_settings -> {
+            R.id.menu_settings -> {
                 startActivity(Intent(this, SettingsActivity::class.java))
                 true
             }
