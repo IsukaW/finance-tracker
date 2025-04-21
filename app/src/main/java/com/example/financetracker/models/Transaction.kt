@@ -9,4 +9,8 @@ data class Transaction(
     var category: String,
     var date: Long,
     var isExpense: Boolean
-)
+) {
+    init {
+        require(id.isNotEmpty()) { "Transaction ID cannot be empty" }
+    }
+}
