@@ -15,9 +15,15 @@ import java.util.Date
 import java.util.Locale
 
 class TransactionAdapter(
-    private val transactions: List<Transaction>,
+    private var transactions: MutableList<Transaction>,
     private val onItemClick: (Transaction) -> Unit
 ) : RecyclerView.Adapter<TransactionAdapter.TransactionViewHolder>() {
+
+    fun updateTransactions(newTransactions: List<Transaction>) {
+        transactions.clear()
+        transactions.addAll(newTransactions)
+        notifyDataSetChanged()
+    }
 
     class TransactionViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val imageCategory: ImageView = view.findViewById(R.id.imageCategoryIcon)

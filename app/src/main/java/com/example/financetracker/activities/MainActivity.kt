@@ -23,7 +23,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var preferenceManager: PreferenceManager
     private lateinit var notificationHelper: NotificationHelper
 
-    private var transactions = mutableListOf<Transaction>()
+    private val transactions = mutableListOf<Transaction>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -34,9 +34,14 @@ class MainActivity : AppCompatActivity() {
         preferenceManager = PreferenceManager(this)
         notificationHelper = NotificationHelper(this)
 
+        // Load transactions before setting up RecyclerView
+        transactions.addAll(transactionStorage.getTransactions())
+        
         setupRecyclerView()
         setupFAB()
         setupBottomNavigation()
+        updateSummary()
+        checkBudget()
     }
 
     private fun setupRecyclerView() {
@@ -82,15 +87,19 @@ class MainActivity : AppCompatActivity() {
         binding.bottomNavigationView.selectedItemId = R.id.menu_home
     }
 
+    override fun onResume() {
+        super.onResume()
+        loadTransactions()
+        updateSummary()
+        checkBudget()
+    }
+
     private fun loadTransactions() {
+        val newTransactions = transactionStorage.getTransactions()
         transactions.clear()
-        transactions.addAll(transactionStorage.getTransactions())
-        transactionAdapter = TransactionAdapter(transactions) { transaction ->
-            val intent = Intent(this, AddEditTransactionActivity::class.java)
-            intent.putExtra("transaction_id", transaction.id)
-            startActivity(intent)
-        }
-        binding.recyclerTransactions.adapter = transactionAdapter
+        transactions.addAll(newTransactions)
+        transactionAdapter.updateTransactions(newTransactions)
+        updateSummary()
     }
 
     private fun updateSummary() {
@@ -181,12 +190,5 @@ class MainActivity : AppCompatActivity() {
             }
             else -> super.onOptionsItemSelected(item)
         }
-    }
-
-    override fun onResume() {
-        super.onResume()
-        loadTransactions()
-        updateSummary()
-        checkBudget()
     }
 }
