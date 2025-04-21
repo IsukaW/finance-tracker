@@ -39,7 +39,7 @@ class MainActivity : AppCompatActivity() {
         
         setupRecyclerView()
         setupFAB()
-        setupBottomNavigation()
+        setupNavigation()
         updateSummary()
         checkBudget()
     }
@@ -64,27 +64,18 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun setupBottomNavigation() {
-        binding.bottomNavigationView.setOnItemSelectedListener { item ->
-            when (item.itemId) {
-                R.id.menu_home -> {
-                    // Already in MainActivity, no need to do anything
-                    true
-                }
-                R.id.menu_analysis -> {
-                    startActivity(Intent(this, AnalysisActivity::class.java))
-                    true
-                }
-                R.id.menu_settings -> {
-                    startActivity(Intent(this, SettingsActivity::class.java))
-                    true
-                }
-                else -> false
-            }
+    private fun setupNavigation() {
+        // Home is already selected (current activity)
+        
+        // Analysis
+        binding.navAnalysis.setOnClickListener {
+            startActivity(Intent(this, AnalysisActivity::class.java))
         }
         
-        // Set home as selected by default
-        binding.bottomNavigationView.selectedItemId = R.id.menu_home
+        // Settings
+        binding.navSettings.setOnClickListener {
+            startActivity(Intent(this, SettingsActivity::class.java))
+        }
     }
 
     override fun onResume() {

@@ -27,17 +27,25 @@ class SettingsActivity : AppCompatActivity() {
         binding = ActivitySettingsBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        supportActionBar?.setDisplayShowHomeEnabled(true)
+
         preferenceManager = PreferenceManager(this)
         transactionStorage = TransactionStorage(this)
         backupManager = BackupManager(this)
 
         setupCurrencySpinner()
         loadSettings()
-        setupBottomNavigation()
+        setupNavigation()
 
         binding.buttonSave.setOnClickListener { saveSettings() }
         binding.buttonBackup.setOnClickListener { backupData() }
         binding.buttonRestore.setOnClickListener { showRestoreDialog() }
+    }
+
+    override fun onSupportNavigateUp(): Boolean {
+        onBackPressed()
+        return true
     }
 
     private fun setupCurrencySpinner() {
@@ -177,28 +185,19 @@ class SettingsActivity : AppCompatActivity() {
         }
     }
 
-    private fun setupBottomNavigation() {
-        binding.bottomNavigationView.setOnItemSelectedListener { item ->
-            when (item.itemId) {
-                R.id.menu_home -> {
-                    startActivity(Intent(this, MainActivity::class.java))
-                    finish()
-                    true
-                }
-                R.id.menu_analysis -> {
-                    startActivity(Intent(this, AnalysisActivity::class.java))
-                    finish()
-                    true
-                }
-                R.id.menu_settings -> {
-                    // Already in SettingsActivity, no need to do anything
-                    true
-                }
-                else -> false
-            }
+    private fun setupNavigation() {
+        // Home
+        binding.navHome.setOnClickListener {
+            startActivity(Intent(this, MainActivity::class.java))
+            finish()
         }
         
-        // Set settings as selected
-        binding.bottomNavigationView.selectedItemId = R.id.menu_settings
+        // Analysis
+        binding.navAnalysis.setOnClickListener {
+            startActivity(Intent(this, AnalysisActivity::class.java))
+            finish()
+        }
+        
+        // Settings is already selected (current activity)
     }
 }

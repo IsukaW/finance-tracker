@@ -11,7 +11,7 @@
     <color name="colorIncome">#4CAF50</color>
     
     <!-- UI colors -->
-    <color name="colorBackground">#FFFFFF</color>
+    <color name="colorBackground">#F5F5F5</color>
     <color name="colorSurface">#FFFFFF</color>
     <color name="colorError">#B00020</color>
     
@@ -22,7 +22,14 @@
     
     <!-- Card and element colors -->
     <color name="cardBackground">#FFFFFF</color>
-    <color name="dividerColor">#EEEEEE</color>
+    <color name="dividerColor">#BDBDBD</color>
     <color name="warningColor">#FFA000</color>
     <color name="successColor">#00C853</color>
+
+    <!-- Bottom Navigation Colors -->
+    <color name="nav_active">#2196F3</color>
+    <color name="nav_inactive">#757575</color>
+    
+    <!-- Status Bar Colors -->
+    <color name="status_bar">#1976D2</color>
 </resources>

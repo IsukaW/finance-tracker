@@ -31,15 +31,20 @@ class AnalysisActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityAnalysisBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        
+        // Remove or comment out this line if toolbar isn't in your layout
+        // setSupportActionBar(binding.toolbar)
+        // supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        // supportActionBar?.setDisplayShowHomeEnabled(true)
 
         transactionStorage = TransactionStorage(this)
         preferenceManager = PreferenceManager(this)
 
         setupMonthSpinner()
         loadTransactions()
-        setupBottomNavigation()
+        setupNavigation()
     }
-
+    
     private fun setupMonthSpinner() {
         val currentMonth = Calendar.getInstance().get(Calendar.MONTH)
 
@@ -116,28 +121,19 @@ class AnalysisActivity : AppCompatActivity() {
             preferenceManager.getCurrencyType(), totalExpense)
     }
 
-    private fun setupBottomNavigation() {
-        binding.bottomNavigationView.setOnItemSelectedListener { item ->
-            when (item.itemId) {
-                R.id.menu_home -> {
-                    startActivity(Intent(this, MainActivity::class.java))
-                    finish()
-                    true
-                }
-                R.id.menu_analysis -> {
-                    // Already in AnalysisActivity, no need to do anything
-                    true
-                }
-                R.id.menu_settings -> {
-                    startActivity(Intent(this, SettingsActivity::class.java))
-                    finish()
-                    true
-                }
-                else -> false
-            }
+    private fun setupNavigation() {
+        // Home 
+        binding.navHome.setOnClickListener {
+            startActivity(Intent(this, MainActivity::class.java))
+            finish()
         }
         
-        // Set analysis as selected
-        binding.bottomNavigationView.selectedItemId = R.id.menu_analysis
+        // Analysis is already selected
+        
+        // Settings
+        binding.navSettings.setOnClickListener {
+            startActivity(Intent(this, SettingsActivity::class.java))
+            finish()
+        }
     }
 }
