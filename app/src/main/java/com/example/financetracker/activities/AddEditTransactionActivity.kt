@@ -13,6 +13,7 @@ import com.example.financetracker.utils.TransactionStorage
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
+import java.util.UUID
 
 class AddEditTransactionActivity : AppCompatActivity() {
     private lateinit var binding: ActivityAddEditTransactionBinding
@@ -131,7 +132,7 @@ class AddEditTransactionActivity : AppCompatActivity() {
         val isExpense = binding.radioGroupType.checkedRadioButtonId == R.id.radioExpense
 
         val transaction = Transaction(
-            id = transactionId ?: "",
+            id = if (isEdit) transactionId!! else UUID.randomUUID().toString(),
             title = title,
             amount = amount,
             category = category,
@@ -149,14 +150,26 @@ class AddEditTransactionActivity : AppCompatActivity() {
     }
 
     private fun deleteTransaction() {
+        if (transactionId.isNullOrEmpty()) {
+            // Should never happen, but just in case
+            finish()
+            return
+        }
+
         AlertDialog.Builder(this)
             .setTitle("Delete Transaction")
             .setMessage("Are you sure you want to delete this transaction?")
             .setPositiveButton("Delete") { _, _ ->
-                transactionId?.let {
-                    transactionStorage.deleteTransaction(it)
+                try {
+                    transactionStorage.deleteTransaction(transactionId!!)
+                    finish()
+                } catch (e: Exception) {
+                    AlertDialog.Builder(this)
+                        .setTitle("Error")
+                        .setMessage("Failed to delete transaction. Please try again.")
+                        .setPositiveButton("OK", null)
+                        .show()
                 }
-                finish()
             }
             .setNegativeButton("Cancel", null)
             .show()
