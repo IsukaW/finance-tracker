@@ -51,10 +51,15 @@ class AnalysisActivity : AppCompatActivity() {
         val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, months)
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         binding.spinnerMonth.adapter = adapter
-        binding.spinnerMonth.setSelection(currentMonth)
+        
+        // Set selection without triggering listener
+        binding.spinnerMonth.setSelection(currentMonth, false)
 
         binding.spinnerMonth.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                // Clear existing chart first
+                binding.chartExpenses.clear()
+                // Force refresh with the newly selected month
                 updateChartForMonth(position)
             }
 
@@ -71,11 +76,15 @@ class AnalysisActivity : AppCompatActivity() {
     private fun updateChartForMonth(month: Int) {
         val calendar = Calendar.getInstance()
         val currentYear = calendar.get(Calendar.YEAR)
-
-        // Filter transactions for selected month
+        
+        // Make sure we use the correct month from the selection
+        val selectedMonth = month
+        val selectedMonthName = months[selectedMonth]
+        
+        // Filter transactions for the selected month (explicitly use selectedMonth)
         val monthlyTransactions = transactions.filter {
             val cal = Calendar.getInstance().apply { timeInMillis = it.date }
-            cal.get(Calendar.MONTH) == month && cal.get(Calendar.YEAR) == currentYear && it.isExpense
+            cal.get(Calendar.MONTH) == selectedMonth && cal.get(Calendar.YEAR) == currentYear && it.isExpense
         }
 
         // Group by category
@@ -89,8 +98,10 @@ class AnalysisActivity : AppCompatActivity() {
         }
 
         if (entries.isEmpty()) {
-            binding.chartExpenses.setNoDataText("No expenses for ${months[month]}")
+            binding.chartExpenses.setNoDataText("No expenses for $selectedMonthName")
             binding.chartExpenses.invalidate()
+            binding.textTotalExpense.text = String.format("Total: %s%.2f",
+                preferenceManager.getCurrencyType(), 0.0)
             return
         }
 
@@ -109,13 +120,16 @@ class AnalysisActivity : AppCompatActivity() {
 
         binding.chartExpenses.data = pieData
         binding.chartExpenses.description.isEnabled = false
-        binding.chartExpenses.centerText = "Expenses\n${months[month]}"
+        
+        // Explicitly set the center text to the selected month name
+        binding.chartExpenses.centerText = "Expenses\n$selectedMonthName"
+        
         binding.chartExpenses.setCenterTextSize(16f)
         binding.chartExpenses.legend.textSize = 12f
         binding.chartExpenses.animateY(1000)
         binding.chartExpenses.invalidate()
 
-        // Update total
+        // Update total expense for the selected month
         val totalExpense = expensesByCategory.values.sum()
         binding.textTotalExpense.text = String.format("Total: %s%.2f",
             preferenceManager.getCurrencyType(), totalExpense)
