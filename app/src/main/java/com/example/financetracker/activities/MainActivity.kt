@@ -110,13 +110,14 @@ class MainActivity : AppCompatActivity() {
             .sumOf { it.amount }
 
         val balance = income - expenses
+        
+        val currencySymbol = preferenceManager.getCurrencyType()
 
-        binding.textIncome.text = String.format("Income: %s%.2f",
-            preferenceManager.getCurrencyType(), income)
-        binding.textExpenses.text = String.format("Expenses: %s%.2f",
-            preferenceManager.getCurrencyType(), expenses)
-        binding.textBalance.text = String.format("Balance: %s%.2f",
-            preferenceManager.getCurrencyType(), balance)
+        // Only update the amount TextViews, not the label TextViews
+        binding.textIncomeAmount.text = String.format("%s%.2f", currencySymbol, income)
+        binding.textExpensesAmount.text = String.format("%s%.2f", currencySymbol, expenses)
+        
+        binding.textBalance.text = String.format("Balance: %s%.2f", currencySymbol, balance)
     }
 
     private fun checkBudget() {

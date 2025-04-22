@@ -67,30 +67,31 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="16dp"
+                            android:layout_marginStart="16dp"
+                            android:layout_marginEnd="16dp"
                             android:orientation="horizontal">
 
                             <LinearLayout
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
-                                android:orientation="vertical">
+                                android:orientation="vertical"
+                                android:gravity="center">
 
                                 <TextView
                                     android:id="@+id/textIncome"
-                                    android:layout_width="match_parent"
+                                    android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:gravity="center_horizontal"
-                                    android:text="Income"
+                                    android:text="Income:"
                                     android:textColor="@color/colorIncome"
                                     android:textSize="14sp" />
 
                                 <TextView
                                     android:id="@+id/textIncomeAmount"
-                                    android:layout_width="match_parent"
+                                    android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:gravity="center_horizontal"
-                                    android:text="$0.00"
-                                    android:textColor="@color/textPrimary"
+                                    android:text="0.00"
+                                    android:textColor="@color/colorIncome"
                                     android:textSize="20sp"
                                     android:textStyle="bold" />
                             </LinearLayout>
@@ -99,24 +100,23 @@
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
-                                android:orientation="vertical">
+                                android:orientation="vertical"
+                                android:gravity="center">
 
                                 <TextView
                                     android:id="@+id/textExpenses"
-                                    android:layout_width="match_parent"
+                                    android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:gravity="center_horizontal"
-                                    android:text="Expenses"
+                                    android:text="Expenses:"
                                     android:textColor="@color/colorExpense"
                                     android:textSize="14sp" />
 
                                 <TextView
                                     android:id="@+id/textExpensesAmount"
-                                    android:layout_width="match_parent"
+                                    android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:gravity="center_horizontal"
-                                    android:text="$0.00"
-                                    android:textColor="@color/textPrimary"
+                                    android:text="0.00"
+                                    android:textColor="@color/colorExpense"
                                     android:textSize="20sp"
                                     android:textStyle="bold" />
                             </LinearLayout>
