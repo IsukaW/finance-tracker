@@ -1,9 +1,11 @@
 package com.example.financetracker.activities
 
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -83,6 +85,9 @@ class MainActivity : AppCompatActivity() {
         loadTransactions()
         updateSummary()
         checkBudget()
+        
+        // Request notification permissions if needed
+        requestNotificationPermissions()
     }
 
     private fun loadTransactions() {
@@ -142,7 +147,8 @@ class MainActivity : AppCompatActivity() {
                 binding.textBudgetStatus.setTextColor(
                     ContextCompat.getColor(this, android.R.color.holo_red_dark)
                 )
-                notificationHelper.showBudgetWarning(monthlyExpenses, budget)
+                // Force show notification when budget is exceeded
+                notificationHelper.showBudgetWarning(monthlyExpenses, budget, true)
             }
             percentage >= 80 -> {
                 binding.textBudgetStatus.text = "Approaching Budget Limit"
@@ -156,6 +162,46 @@ class MainActivity : AppCompatActivity() {
                 binding.textBudgetStatus.setTextColor(
                     ContextCompat.getColor(this, android.R.color.holo_green_dark)
                 )
+            }
+        }
+    }
+
+    // Add debug method to test notifications directly
+    private fun testNotification() {
+        notificationHelper.showDebugNotification()
+    }
+
+    // Request notification permissions for Android 13+
+    private fun requestNotificationPermissions() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS) != 
+                android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                requestPermissions(
+                    arrayOf(android.Manifest.permission.POST_NOTIFICATIONS),
+                    NotificationHelper.PERMISSION_REQUEST_CODE
+                )
+            }
+        }
+    }
+
+    // Handle permission results
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        
+        if (requestCode == NotificationHelper.PERMISSION_REQUEST_CODE) {
+            if (grantResults.isNotEmpty() && grantResults[0] == android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                // Permission granted, check budget again to possibly show notification
+                checkBudget()
+            } else {
+                Toast.makeText(
+                    this,
+                    "Notification permission denied. You won't receive budget alerts.",
+                    Toast.LENGTH_LONG
+                ).show()
             }
         }
     }
