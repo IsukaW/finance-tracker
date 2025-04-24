@@ -109,4 +109,54 @@ class UserRepository(context: Context) {
         Log.d(TAG, "Is user logged in: $isLoggedIn")
         return isLoggedIn
     }
+
+    /**
+     * Checks if an email is already taken by another user
+     * @param email The email to check
+     * @param currentUserId The ID of the current user (to exclude from the check)
+     * @return true if the email is taken by another user, false otherwise
+     */
+    fun isEmailTaken(email: String, currentUserId: String): Boolean {
+        return getUsers().any { 
+            it.id != currentUserId && 
+            it.email.equals(email, ignoreCase = true) 
+        }
+    }
+    
+    /**
+     * Updates a user's information
+     * @param updatedUser The updated user object
+     * @return true if the update was successful, false otherwise
+     */
+    fun updateUser(updatedUser: User): Boolean {
+        try {
+            val users = getUsers().toMutableList()
+            
+            // Find the user to update
+            val index = users.indexOfFirst { it.id == updatedUser.id }
+            if (index == -1) {
+                Log.e(TAG, "User not found for update: ${updatedUser.id}")
+                return false
+            }
+            
+            // Update the user
+            users[index] = updatedUser
+            
+            // Save all users
+            saveUsers(users)
+            
+            // Update current user if needed
+            val currentUser = getCurrentUser()
+            if (currentUser?.id == updatedUser.id) {
+                val userJson = gson.toJson(updatedUser)
+                sharedPreferences.edit().putString(KEY_CURRENT_USER, userJson).apply()
+            }
+            
+            Log.d(TAG, "User updated: ${updatedUser.name}, ${updatedUser.email}")
+            return true
+        } catch (e: Exception) {
+            Log.e(TAG, "Error updating user: ${e.message}", e)
+            return false
+        }
+    }
 }

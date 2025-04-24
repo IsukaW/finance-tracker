@@ -1,6 +1,7 @@
 package com.example.financetracker.utils
 
 import android.content.Context
+import android.util.Log
 
 class PreferenceManager(context: Context) {
     private val sharedPreferences = context.getSharedPreferences(
@@ -29,5 +30,18 @@ class PreferenceManager(context: Context) {
 
     fun areNotificationsEnabled(): Boolean {
         return sharedPreferences.getBoolean("notifications_enabled", true)
+    }
+
+    /**
+     * Reset monthly statistics when a new month begins
+     */
+    fun resetMonthlyStats() {
+        // Reset monthly expense tracking
+        sharedPreferences.edit()
+            .putFloat("current_month_expenses", 0f)
+            .putBoolean("budget_warning_shown", false)
+            .apply()
+
+        Log.d("PreferenceManager", "Reset monthly statistics for new month")
     }
 }

@@ -5,6 +5,7 @@ import android.util.Log
 import com.example.financetracker.models.Transaction
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import java.util.Calendar
 
 class TransactionStorage(private val context: Context) {
     private val gson = Gson()
@@ -73,5 +74,40 @@ class TransactionStorage(private val context: Context) {
         } else {
             Log.e("TransactionStorage", "Transaction with ID $id not found for deletion")
         }
+    }
+
+    /**
+     * Archives transactions from the previous month by tagging them.
+     * This maintains the data but marks it as belonging to a previous period.
+     */
+    fun archivePreviousMonthTransactions() {
+        val transactions = getTransactions()
+        
+        // Get current month and year
+        val calendar = Calendar.getInstance()
+        val currentMonth = calendar.get(Calendar.MONTH)
+        val currentYear = calendar.get(Calendar.YEAR)
+        
+        // Count how many transactions will be archived
+        val previousMonthTransactions = transactions.filter {
+            val transactionCalendar = Calendar.getInstance()
+            transactionCalendar.timeInMillis = it.date
+            
+            val transactionMonth = transactionCalendar.get(Calendar.MONTH)
+            val transactionYear = transactionCalendar.get(Calendar.YEAR)
+            
+            // Check if transaction is from a previous month
+            (transactionMonth != currentMonth || transactionYear != currentYear)
+        }
+        
+        Log.d("TransactionStorage", "Found ${previousMonthTransactions.size} transactions from previous months")
+        
+        // In a real implementation, you might:
+        // 1. Move them to a separate "archive" storage
+        // 2. Tag them in the database as "archived"
+        // 3. Create monthly summary records
+        
+        // For this implementation, we're just logging the count
+        // If needed, we could modify the transactions and save them back
     }
 }

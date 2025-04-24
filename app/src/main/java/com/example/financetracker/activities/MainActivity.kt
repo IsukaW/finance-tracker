@@ -14,10 +14,13 @@ import com.example.financetracker.adapters.TransactionAdapter
 import com.example.financetracker.databinding.ActivityMainBinding
 import com.example.financetracker.models.Transaction
 import com.example.financetracker.notifications.NotificationHelper
+import com.example.financetracker.utils.MonthChangeTracker
 import com.example.financetracker.utils.PreferenceManager
 import com.example.financetracker.utils.TransactionStorage
 import com.example.financetracker.utils.UserRepository
+import java.text.SimpleDateFormat
 import java.util.Calendar
+import java.util.Locale
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
@@ -53,6 +56,7 @@ class MainActivity : AppCompatActivity() {
         setupNavigation()
         updateSummary()
         checkBudget()
+        setupMonthDisplay()
     }
 
     private fun setupRecyclerView() {
@@ -89,14 +93,54 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun setupMonthDisplay() {
+        // Display current month and year in the UI
+        val dateFormat = SimpleDateFormat("MMMM yyyy", Locale.getDefault())
+        val currentDate = Calendar.getInstance().time
+        val monthYearText = dateFormat.format(currentDate)
+        
+        // You could add a TextView to your layout to display this
+        // or use it in an existing view
+        // For example: binding.textViewCurrentMonth.text = monthYearText
+        
+        // Alternatively, you could add it to an existing header
+        // For demonstration, let's show it in a toast
+        Toast.makeText(this, "Current Period: $monthYearText", Toast.LENGTH_SHORT).show()
+    }
+
     override fun onResume() {
         super.onResume()
+        
+        // Check for month change even when returning to activity
+        val monthChangeTracker = MonthChangeTracker(this)
+        if (monthChangeTracker.hasMonthChanged()) {
+            // If month has changed while app was in background
+            monthChangeTracker.handleMonthChange()
+            
+            // Refresh UI with new month data
+            refreshForNewMonth()
+        }
+        
         loadTransactions()
         updateSummary()
         checkBudget()
         
         // Request notification permissions if needed
         requestNotificationPermissions()
+    }
+
+    /**
+     * Refreshes the UI for a new month
+     */
+    private fun refreshForNewMonth() {
+        Toast.makeText(this, "New month started! Your monthly stats have been reset.", Toast.LENGTH_LONG).show()
+        
+        // Clear or update the UI elements specific to monthly data
+        loadTransactions()
+        updateSummary()
+        
+        // Update month display
+        setupMonthDisplay()
     }
 
     private fun loadTransactions() {

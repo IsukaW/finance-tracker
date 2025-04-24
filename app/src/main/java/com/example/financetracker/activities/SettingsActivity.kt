@@ -246,7 +246,7 @@ class SettingsActivity : AppCompatActivity() {
         
         // Set up edit profile button
         binding.buttonEditProfile.setOnClickListener {
-            showEditProfileDialog()
+            startActivity(Intent(this, EditProfileActivity::class.java))
         }
     }
     
@@ -275,5 +275,11 @@ class SettingsActivity : AppCompatActivity() {
         // In a real implementation, you might do something like:
         // val intent = Intent(this, EditProfileActivity::class.java)
         // startActivity(intent)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // Refresh user profile details in case they were updated
+        loadUserProfile()
     }
 }

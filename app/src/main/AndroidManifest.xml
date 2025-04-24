@@ -47,6 +47,10 @@
             android:name=".activities.SettingsActivity"
             android:exported="false" />
 
+        <activity
+            android:name=".activities.EditProfileActivity"
+            android:exported="false" />
+
         <receiver
             android:name=".notifications.ReminderReceiver"
             android:exported="false" />
