@@ -49,6 +49,7 @@ class SettingsActivity : AppCompatActivity() {
         binding.buttonSave.setOnClickListener { saveSettings() }
         binding.buttonBackup.setOnClickListener { backupData() }
         binding.buttonRestore.setOnClickListener { showRestoreDialog() }
+        binding.buttonRefreshMonth.setOnClickListener { showResetMonthConfirmation() }
     }
 
     override fun onSupportNavigateUp(): Boolean {
@@ -275,6 +276,47 @@ class SettingsActivity : AppCompatActivity() {
         // In a real implementation, you might do something like:
         // val intent = Intent(this, EditProfileActivity::class.java)
         // startActivity(intent)
+    }
+
+    private fun showResetMonthConfirmation() {
+        AlertDialog.Builder(this)
+            .setTitle("Reset Monthly Data")
+            .setMessage("This will clear all current month's transactions and reset your monthly statistics. Are you sure?")
+            .setPositiveButton("Reset") { _, _ ->
+                resetMonthlyData()
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    private fun resetMonthlyData() {
+        // Get all transactions
+        val allTransactions = transactionStorage.getTransactions()
+        
+        // Get current month and year
+        val calendar = Calendar.getInstance()
+        val currentMonth = calendar.get(Calendar.MONTH)
+        val currentYear = calendar.get(Calendar.YEAR)
+        
+        // Filter out transactions from the current month
+        val filteredTransactions = allTransactions.filter {
+            val transactionCalendar = Calendar.getInstance().apply { timeInMillis = it.date }
+            transactionCalendar.get(Calendar.MONTH) != currentMonth || 
+            transactionCalendar.get(Calendar.YEAR) != currentYear
+        }
+        
+        // Save the filtered transactions (without current month's data)
+        transactionStorage.saveTransactions(filteredTransactions)
+        
+        // Reset monthly statistics in preferences
+        preferenceManager.resetMonthlyStats()
+        
+        // Show success message
+        Toast.makeText(
+            this,
+            "Monthly data has been reset successfully!",
+            Toast.LENGTH_LONG
+        ).show()
     }
 
     override fun onResume() {

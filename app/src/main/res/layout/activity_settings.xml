@@ -214,6 +214,15 @@
                             android:layout_height="wrap_content"
                             android:layout_marginTop="8dp"
                             android:text="Restore Data" />
+                            
+                        <Button
+                            android:id="@+id/buttonRefreshMonth"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:backgroundTint="#F44336"
+                            android:text="Reset Monthly Data"
+                            android:textColor="@android:color/white" />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
