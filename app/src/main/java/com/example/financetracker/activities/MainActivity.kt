@@ -5,6 +5,8 @@ import android.os.Build
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
+import android.widget.ArrayAdapter
+import android.widget.AutoCompleteTextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
@@ -30,7 +32,20 @@ class MainActivity : AppCompatActivity() {
     private lateinit var notificationHelper: NotificationHelper
     private lateinit var userRepository: UserRepository
 
-    private val transactions = mutableListOf<Transaction>()
+    private val allTransactions = mutableListOf<Transaction>()
+    private val displayedTransactions = mutableListOf<Transaction>()
+    
+    // Month selection options
+    private val monthOptions = arrayOf(
+        "Current Month", 
+        "Last Month", 
+        "Last 3 Months", 
+        "Last 6 Months", 
+        "This Year", 
+        "All Transactions",
+        "January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December"
+    )
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -48,19 +63,114 @@ class MainActivity : AppCompatActivity() {
             return
         }
 
-        // Load transactions before setting up RecyclerView
-        transactions.addAll(transactionStorage.getTransactions())
+        // Load all transactions first
+        allTransactions.addAll(transactionStorage.getTransactions())
         
+        // Setup UI components
+        setupMonthSelector()
         setupRecyclerView()
         setupFAB()
         setupNavigation()
-        updateSummary()
-        checkBudget()
-        setupMonthDisplay()
+        
+        // Filter transactions to current month by default
+        filterTransactionsBySelection("Current Month")
+        
+        // Request notification permissions if needed
+        requestNotificationPermissions()
+    }
+
+    private fun setupMonthSelector() {
+        val adapter = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, monthOptions)
+        (binding.monthSelectorDropdown as? AutoCompleteTextView)?.setAdapter(adapter)
+        
+        binding.monthSelectorDropdown.setOnItemClickListener { _, _, position, _ ->
+            val selectedOption = monthOptions[position]
+            filterTransactionsBySelection(selectedOption)
+        }
+    }
+    
+    private fun filterTransactionsBySelection(selection: String) {
+        val calendar = Calendar.getInstance()
+        val currentMonth = calendar.get(Calendar.MONTH)
+        val currentYear = calendar.get(Calendar.YEAR)
+        
+        val filteredTransactions = when(selection) {
+            "Current Month" -> {
+                allTransactions.filter { transaction ->
+                    val transactionCal = Calendar.getInstance().apply { timeInMillis = transaction.date }
+                    transactionCal.get(Calendar.MONTH) == currentMonth && 
+                    transactionCal.get(Calendar.YEAR) == currentYear
+                }
+            }
+            "Last Month" -> {
+                calendar.add(Calendar.MONTH, -1)
+                val lastMonth = calendar.get(Calendar.MONTH)
+                val lastMonthYear = calendar.get(Calendar.YEAR)
+                
+                allTransactions.filter { transaction ->
+                    val transactionCal = Calendar.getInstance().apply { timeInMillis = transaction.date }
+                    transactionCal.get(Calendar.MONTH) == lastMonth && 
+                    transactionCal.get(Calendar.YEAR) == lastMonthYear
+                }
+            }
+            "Last 3 Months" -> {
+                calendar.add(Calendar.MONTH, -3)
+                val threeMonthsAgo = calendar.timeInMillis
+                
+                allTransactions.filter { transaction ->
+                    transaction.date >= threeMonthsAgo
+                }
+            }
+            "Last 6 Months" -> {
+                calendar.add(Calendar.MONTH, -6)
+                val sixMonthsAgo = calendar.timeInMillis
+                
+                allTransactions.filter { transaction ->
+                    transaction.date >= sixMonthsAgo
+                }
+            }
+            "This Year" -> {
+                allTransactions.filter { transaction ->
+                    val transactionCal = Calendar.getInstance().apply { timeInMillis = transaction.date }
+                    transactionCal.get(Calendar.YEAR) == currentYear
+                }
+            }
+            "All Transactions" -> {
+                allTransactions
+            }
+            else -> {
+                // Handle specific month selections (January through December)
+                val selectedMonthIndex = monthOptions.indexOf(selection) - 6  // Adjust for the first 6 options
+                
+                allTransactions.filter { transaction ->
+                    val transactionCal = Calendar.getInstance().apply { timeInMillis = transaction.date }
+                    transactionCal.get(Calendar.MONTH) == selectedMonthIndex
+                }
+            }
+        }
+        
+        // Update displayed transactions
+        displayedTransactions.clear()
+        displayedTransactions.addAll(filteredTransactions)
+        
+        // Update UI with filtered data
+        updateTransactionsList(filteredTransactions)
+        updateSummary(filteredTransactions)
+        updateTransactionsHeader(selection, filteredTransactions.size)
+    }
+    
+    private fun updateTransactionsList(transactions: List<Transaction>) {
+        if (::transactionAdapter.isInitialized) {
+            transactionAdapter.updateTransactions(transactions)
+        }
+    }
+    
+    private fun updateTransactionsHeader(filterType: String, count: Int) {
+        binding.textTransactionsHeader.text = "$filterType Transactions ($count)"
     }
 
     private fun setupRecyclerView() {
-        transactionAdapter = TransactionAdapter(transactions) { transaction ->
+        transactionAdapter = TransactionAdapter(displayedTransactions) { transaction ->
             // Handle item click - open edit screen
             val intent = Intent(this, AddEditTransactionActivity::class.java)
             intent.putExtra("transaction_id", transaction.id)
@@ -94,76 +204,46 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupMonthDisplay() {
-        // Display current month and year in the UI
-        val dateFormat = SimpleDateFormat("MMMM yyyy", Locale.getDefault())
-        val currentDate = Calendar.getInstance().time
-        val monthYearText = dateFormat.format(currentDate)
-        
-        // You could add a TextView to your layout to display this
-        // or use it in an existing view
-        // For example: binding.textViewCurrentMonth.text = monthYearText
-        
-        // Alternatively, you could add it to an existing header
-        // For demonstration, let's show it in a toast
-        Toast.makeText(this, "Current Period: $monthYearText", Toast.LENGTH_SHORT).show()
+        // Update the month selector to show current month by default
+        binding.monthSelectorDropdown.setText("Current Month", false)
     }
 
     override fun onResume() {
         super.onResume()
         
-        // Check for month change even when returning to activity
+        // Check for month change
         val monthChangeTracker = MonthChangeTracker(this)
         if (monthChangeTracker.hasMonthChanged()) {
-            // If month has changed while app was in background
             monthChangeTracker.handleMonthChange()
-            
-            // Refresh UI with new month data
             refreshForNewMonth()
         }
         
-        loadTransactions()
-        updateSummary()
-        checkBudget()
-        
-        // Request notification permissions if needed
-        requestNotificationPermissions()
+        // Reload transactions and apply current filter
+        reloadTransactions()
     }
 
-    /**
-     * Refreshes the UI for a new month
-     */
     private fun refreshForNewMonth() {
         Toast.makeText(this, "New month started! Your monthly stats have been reset.", Toast.LENGTH_LONG).show()
-        
-        // Clear or update the UI elements specific to monthly data
-        loadTransactions()
-        updateSummary()
-        
-        // Update month display
         setupMonthDisplay()
     }
 
-    private fun loadTransactions() {
-        val newTransactions = transactionStorage.getTransactions()
-        transactions.clear()
-        transactions.addAll(newTransactions)
-        transactionAdapter.updateTransactions(newTransactions)
-        updateSummary()
+    private fun reloadTransactions() {
+        // Reload all transactions from storage
+        allTransactions.clear()
+        allTransactions.addAll(transactionStorage.getTransactions())
+        
+        // Re-apply current filter
+        val currentSelection = binding.monthSelectorDropdown.text.toString()
+        filterTransactionsBySelection(currentSelection)
     }
 
-    private fun updateSummary() {
-        val currentMonth = Calendar.getInstance().get(Calendar.MONTH)
-
-        val monthlyTransactions = transactions.filter {
-            val cal = Calendar.getInstance().apply { timeInMillis = it.date }
-            cal.get(Calendar.MONTH) == currentMonth
-        }
-
-        val income = monthlyTransactions
+    private fun updateSummary(transactions: List<Transaction>) {
+        // Calculate summary based on filtered transactions
+        val income = transactions
             .filter { !it.isExpense }
             .sumOf { it.amount }
 
-        val expenses = monthlyTransactions
+        val expenses = transactions
             .filter { it.isExpense }
             .sumOf { it.amount }
 
@@ -171,26 +251,27 @@ class MainActivity : AppCompatActivity() {
         
         val currencySymbol = preferenceManager.getCurrencyType()
 
-        // Only update the amount TextViews, not the label TextViews
+        // Update UI with calculated values
         binding.textIncomeAmount.text = String.format("%s%.2f", currencySymbol, income)
         binding.textExpensesAmount.text = String.format("%s%.2f", currencySymbol, expenses)
-        
         binding.textBalance.text = String.format("Balance: %s%.2f", currencySymbol, balance)
+        
+        // Update budget progress
+        updateBudgetProgress(expenses)
     }
-
-    private fun checkBudget() {
+    
+    private fun updateBudgetProgress(currentExpenses: Double) {
         val budget = preferenceManager.getMonthlyBudget()
-        if (budget <= 0) return  // No budget set
+        if (budget <= 0) {
+            binding.progressBudget.progress = 0
+            binding.textBudgetStatus.text = "Budget: 0%"
+            binding.textBudgetStatus.setTextColor(
+                ContextCompat.getColor(this, android.R.color.darker_gray)
+            )
+            return
+        }
 
-        val currentMonth = Calendar.getInstance().get(Calendar.MONTH)
-        val monthlyExpenses = transactions
-            .filter {
-                val cal = Calendar.getInstance().apply { timeInMillis = it.date }
-                it.isExpense && cal.get(Calendar.MONTH) == currentMonth
-            }
-            .sumOf { it.amount }
-
-        val percentage = (monthlyExpenses / budget) * 100
+        val percentage = (currentExpenses / budget) * 100
 
         binding.progressBudget.progress = percentage.toInt().coerceAtMost(100)
 
@@ -200,15 +281,20 @@ class MainActivity : AppCompatActivity() {
                 binding.textBudgetStatus.setTextColor(
                     ContextCompat.getColor(this, android.R.color.holo_red_dark)
                 )
-                // Force show notification when budget is exceeded
-                notificationHelper.showBudgetWarning(monthlyExpenses, budget, true)
+                // Show notification for budget exceeded
+                if (binding.monthSelectorDropdown.text.toString() == "Current Month") {
+                    notificationHelper.showBudgetWarning(currentExpenses, budget, true)
+                }
             }
             percentage >= 80 -> {
                 binding.textBudgetStatus.text = "Approaching Budget Limit"
                 binding.textBudgetStatus.setTextColor(
                     ContextCompat.getColor(this, android.R.color.holo_orange_dark)
                 )
-                notificationHelper.showBudgetWarning(monthlyExpenses, budget)
+                // Show notification for approaching budget
+                if (binding.monthSelectorDropdown.text.toString() == "Current Month") {
+                    notificationHelper.showBudgetWarning(currentExpenses, budget)
+                }
             }
             else -> {
                 binding.textBudgetStatus.text = "Budget: ${percentage.toInt()}%"
@@ -217,11 +303,6 @@ class MainActivity : AppCompatActivity() {
                 )
             }
         }
-    }
-
-    // Add debug method to test notifications directly
-    private fun testNotification() {
-        notificationHelper.showDebugNotification()
     }
 
     // Request notification permissions for Android 13+
@@ -248,7 +329,7 @@ class MainActivity : AppCompatActivity() {
         if (requestCode == NotificationHelper.PERMISSION_REQUEST_CODE) {
             if (grantResults.isNotEmpty() && grantResults[0] == android.content.pm.PackageManager.PERMISSION_GRANTED) {
                 // Permission granted, check budget again to possibly show notification
-                checkBudget()
+                filterTransactionsBySelection(binding.monthSelectorDropdown.text.toString())
             } else {
                 Toast.makeText(
                     this,
@@ -297,5 +378,9 @@ class MainActivity : AppCompatActivity() {
         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         startActivity(intent)
         finish()
+    }
+
+    private fun checkBudget() {
+        // This method is now replaced with updateBudgetProgress
     }
 }
