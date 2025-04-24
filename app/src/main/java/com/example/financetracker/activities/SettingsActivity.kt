@@ -7,13 +7,17 @@ import android.content.Intent
 import android.os.Bundle
 import android.widget.ArrayAdapter
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import com.example.financetracker.R
 import com.example.financetracker.databinding.ActivitySettingsBinding
+import com.example.financetracker.models.User
 import com.example.financetracker.notifications.ReminderReceiver
 import com.example.financetracker.utils.BackupManager
 import com.example.financetracker.utils.PreferenceManager
 import com.example.financetracker.utils.TransactionStorage
+import com.example.financetracker.utils.UserRepository
 import java.util.Calendar
 
 class SettingsActivity : AppCompatActivity() {
@@ -21,6 +25,7 @@ class SettingsActivity : AppCompatActivity() {
     private lateinit var preferenceManager: PreferenceManager
     private lateinit var transactionStorage: TransactionStorage
     private lateinit var backupManager: BackupManager
+    private lateinit var userRepository: UserRepository
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -33,10 +38,13 @@ class SettingsActivity : AppCompatActivity() {
         preferenceManager = PreferenceManager(this)
         transactionStorage = TransactionStorage(this)
         backupManager = BackupManager(this)
+        userRepository = UserRepository(this)
 
+        loadUserProfile()
         setupCurrencySpinner()
         loadSettings()
         setupNavigation()
+        setupProfileButtons()
 
         binding.buttonSave.setOnClickListener { saveSettings() }
         binding.buttonBackup.setOnClickListener { backupData() }
@@ -46,6 +54,35 @@ class SettingsActivity : AppCompatActivity() {
     override fun onSupportNavigateUp(): Boolean {
         onBackPressed()
         return true
+    }
+
+    private fun loadUserProfile() {
+        // Get current user from UserRepository
+        val currentUser = userRepository.getCurrentUser()
+        
+        if (currentUser != null) {
+            // Set user name and email in the UI
+            binding.textViewUserName.text = currentUser.name
+            binding.textViewUserEmail.text = currentUser.email
+            
+            // Set first letter of name as avatar text
+            val firstLetter = currentUser.name.firstOrNull()?.toString() ?: "?"
+            // You could set a text drawable here if needed
+            
+            // Log to verify data is being loaded
+            android.util.Log.d("SettingsActivity", "Loaded user: ${currentUser.name}, ${currentUser.email}")
+        } else {
+            // Handle case where user is not logged in
+            android.util.Log.e("SettingsActivity", "Current user is null")
+            navigateToLogin()
+        }
+    }
+    
+    private fun navigateToLogin() {
+        val intent = Intent(this, LoginActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        startActivity(intent)
+        finish()
     }
 
     private fun setupCurrencySpinner() {
@@ -199,5 +236,44 @@ class SettingsActivity : AppCompatActivity() {
         }
         
         // Settings is already selected (current activity)
+    }
+
+    private fun setupProfileButtons() {
+        // Set up logout button
+        binding.buttonLogout.setOnClickListener {
+            showLogoutConfirmationDialog()
+        }
+        
+        // Set up edit profile button
+        binding.buttonEditProfile.setOnClickListener {
+            showEditProfileDialog()
+        }
+    }
+    
+    private fun showLogoutConfirmationDialog() {
+        AlertDialog.Builder(this)
+            .setTitle("Logout")
+            .setMessage("Are you sure you want to logout?")
+            .setPositiveButton("Yes") { _, _ ->
+                logoutUser()
+            }
+            .setNegativeButton("No", null)
+            .show()
+    }
+    
+    private fun logoutUser() {
+        userRepository.logoutUser()
+        Toast.makeText(this, "Logged out successfully", Toast.LENGTH_SHORT).show()
+        navigateToLogin()
+    }
+    
+    private fun showEditProfileDialog() {
+        // This would typically open a dialog or activity to edit profile details
+        // For now, we'll just show a toast message
+        Toast.makeText(this, "Edit profile functionality will be implemented soon", Toast.LENGTH_SHORT).show()
+        
+        // In a real implementation, you might do something like:
+        // val intent = Intent(this, EditProfileActivity::class.java)
+        // startActivity(intent)
     }
 }

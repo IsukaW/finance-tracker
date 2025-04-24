@@ -17,4 +17,17 @@
         <item>¥</item>
         <item>₹</item>
     </string-array>
+    
+    <!-- Login and Registration -->
+    <string name="login">Login</string>
+    <string name="register">Register</string>
+    <string name="email_hint">Email Address</string>
+    <string name="password_hint">Password</string>
+    <string name="confirm_password_hint">Confirm Password</string>
+    <string name="forgot_password">Forgot Password?</string>
+    <string name="name_hint">Full Name</string>
+    <string name="create_account">Create Account</string>
+    <string name="already_have_account">Already have an account?</string>
+    <string name="dont_have_account">Don\'t have an account?</string>
+    <string name="logout">Logout</string>
 </resources>

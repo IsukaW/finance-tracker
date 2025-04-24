@@ -16,6 +16,7 @@ import com.example.financetracker.models.Transaction
 import com.example.financetracker.notifications.NotificationHelper
 import com.example.financetracker.utils.PreferenceManager
 import com.example.financetracker.utils.TransactionStorage
+import com.example.financetracker.utils.UserRepository
 import java.util.Calendar
 
 class MainActivity : AppCompatActivity() {
@@ -24,6 +25,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var transactionStorage: TransactionStorage
     private lateinit var preferenceManager: PreferenceManager
     private lateinit var notificationHelper: NotificationHelper
+    private lateinit var userRepository: UserRepository
 
     private val transactions = mutableListOf<Transaction>()
 
@@ -35,6 +37,13 @@ class MainActivity : AppCompatActivity() {
         transactionStorage = TransactionStorage(this)
         preferenceManager = PreferenceManager(this)
         notificationHelper = NotificationHelper(this)
+        userRepository = UserRepository(this)
+
+        // Check if user is logged in
+        if (!userRepository.isUserLoggedIn()) {
+            navigateToLogin()
+            return
+        }
 
         // Load transactions before setting up RecyclerView
         transactions.addAll(transactionStorage.getTransactions())
@@ -217,7 +226,6 @@ class MainActivity : AppCompatActivity() {
                 startActivity(Intent(this, MainActivity::class.java))
                 true
             }
-
             R.id.menu_analysis -> {
                 startActivity(Intent(this, AnalysisActivity::class.java))
                 true
@@ -226,7 +234,24 @@ class MainActivity : AppCompatActivity() {
                 startActivity(Intent(this, SettingsActivity::class.java))
                 true
             }
+            R.id.menu_logout -> {
+                logoutUser()
+                true
+            }
             else -> super.onOptionsItemSelected(item)
         }
+    }
+    
+    private fun logoutUser() {
+        userRepository.logoutUser()
+        navigateToLogin()
+    }
+    
+    private fun navigateToLogin() {
+        val intent = Intent(this, LoginActivity::class.java)
+        // Clear the back stack
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        startActivity(intent)
+        finish()
     }
 }
