@@ -78,6 +78,7 @@ class TransactionAdapter(
             "transport" -> R.drawable.ic_transport
             "bills" -> R.drawable.ic_bills
             "entertainment" -> R.drawable.ic_entertainment
+            "salary" -> R.drawable.ic_expense
             "shopping" -> R.drawable.ic_shopping
             "health" -> R.drawable.ic_health
             "education" -> R.drawable.ic_education

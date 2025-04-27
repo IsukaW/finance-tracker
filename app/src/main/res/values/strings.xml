@@ -5,6 +5,7 @@
         <item>Transport</item>
         <item>Bills</item>
         <item>Entertainment</item>
+        <item>Salary</item>
         <item>Shopping</item>
         <item>Health</item>
         <item>Education</item>
@@ -12,6 +13,7 @@
     </string-array>
     <string-array name="currencies">
         <item>$</item>
+        <item>Rs.</item>
         <item>€</item>
         <item>£</item>
         <item>¥</item>
