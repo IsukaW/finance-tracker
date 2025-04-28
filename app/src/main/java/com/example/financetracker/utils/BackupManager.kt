@@ -57,4 +57,42 @@ class BackupManager(private val context: Context) {
             emptyList()
         }
     }
+    
+    fun deleteBackupFile(fileName: String): Boolean {
+        return try {
+            val file = File(context.filesDir, fileName)
+            if (file.exists() && file.isFile && 
+                fileName.startsWith("finance_backup_") && 
+                fileName.endsWith(".json")) {
+                val result = file.delete()
+                Log.d("BackupManager", "Deleted backup file: $fileName, result: $result")
+                result
+            } else {
+                Log.e("BackupManager", "Invalid backup file: $fileName")
+                false
+            }
+        } catch (e: Exception) {
+            Log.e("BackupManager", "Failed to delete backup file", e)
+            false
+        }
+    }
+    
+    fun getFormattedBackupDate(fileName: String): String {
+        try {
+            // Extract date portion from finance_backup_20230521_153045.json format
+            val datePart = fileName.substringAfter("finance_backup_").substringBefore(".json")
+            val dateFormat = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault())
+            val outputFormat = SimpleDateFormat("MMM dd, yyyy - HH:mm", Locale.getDefault())
+            
+            val date = dateFormat.parse(datePart)
+            return if (date != null) {
+                outputFormat.format(date)
+            } else {
+                fileName
+            }
+        } catch (e: Exception) {
+            Log.e("BackupManager", "Failed to parse backup date", e)
+            return fileName
+        }
+    }
 }

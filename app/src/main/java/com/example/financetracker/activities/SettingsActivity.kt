@@ -202,16 +202,22 @@ class SettingsActivity : AppCompatActivity() {
             Toast.makeText(this, "No backup files found", Toast.LENGTH_SHORT).show()
             return
         }
-
-        androidx.appcompat.app.AlertDialog.Builder(this)
-            .setTitle("Restore Backup")
-            .setItems(backupFiles.toTypedArray()) { _, which ->
-                restoreData(backupFiles[which])
+        
+        // Create a list of formatted backup names for display
+        val formattedBackups = backupFiles.map { fileName ->
+            backupManager.getFormattedBackupDate(fileName)
+        }.toTypedArray()
+        
+        // Show dialog with restore and delete options
+        val dialog = AlertDialog.Builder(this)
+            .setTitle("Backup Files")
+            .setItems(formattedBackups) { _, which ->
+                showBackupOptionsDialog(backupFiles[which], formattedBackups[which])
             }
             .setNegativeButton("Cancel", null)
             .show()
     }
-
+    
     private fun restoreData(fileName: String) {
         val transactions = backupManager.importData(fileName)
 
@@ -220,6 +226,41 @@ class SettingsActivity : AppCompatActivity() {
             Toast.makeText(this, "Data restored successfully", Toast.LENGTH_SHORT).show()
         } else {
             Toast.makeText(this, "Failed to restore data", Toast.LENGTH_SHORT).show()
+        }
+    }
+    
+    private fun showBackupOptionsDialog(fileName: String, displayName: String) {
+        val options = arrayOf("Restore", "Delete")
+        
+        AlertDialog.Builder(this)
+            .setTitle(displayName)
+            .setItems(options) { _, which ->
+                when (which) {
+                    0 -> restoreData(fileName)
+                    1 -> confirmDeleteBackup(fileName, displayName)
+                }
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+    
+    private fun confirmDeleteBackup(fileName: String, displayName: String) {
+        AlertDialog.Builder(this)
+            .setTitle("Delete Backup")
+            .setMessage("Are you sure you want to delete this backup?\n\n$displayName")
+            .setPositiveButton("Delete") { _, _ ->
+                deleteBackup(fileName)
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+    
+    private fun deleteBackup(fileName: String) {
+        val success = backupManager.deleteBackupFile(fileName)
+        if (success) {
+            Toast.makeText(this, "Backup deleted successfully", Toast.LENGTH_SHORT).show()
+        } else {
+            Toast.makeText(this, "Failed to delete backup", Toast.LENGTH_SHORT).show()
         }
     }
 
